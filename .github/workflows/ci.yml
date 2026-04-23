@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: python:3.10-slim
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          pip install --no-cache-dir -e ".[dev,test]"
+
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://test:test@postgres:5432/test
+          REDIS_URL: redis://redis:6379/0
+        run: pytest -v
+
+      - name: Type check
+        run: mypy src/
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t eventflow:${{ github.sha }} -f docker/Dockerfile .
+
+      - name: Run container
+        run: |
+          docker run -d --name eventflow-test eventflow:${{ github.sha }}
+          sleep 10
+          docker logs eventflow-test
+          docker rm -f eventflow-test
