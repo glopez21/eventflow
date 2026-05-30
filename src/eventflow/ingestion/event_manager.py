@@ -76,6 +76,43 @@ class EventManager:
                 json.dumps({"event_id": event_id, "type": event_type.value})
             )
 
+        # Push to Augur hub
+        try:
+            from eventflow import push_to_augur
+            push_to_augur(
+                event_type=event_type.value,
+                severity="info",
+                title=f"EventFlow: {event_type.value}",
+                payload={
+                    "event_id": event_id,
+                    "user_id": user_id,
+                    "session_id": session_id,
+                    "payload": payload,
+                },
+                tags=["eventflow", event_type.value],
+            )
+        except Exception:
+            pass
+
+        # Emit to n3xusDB event_outbox via n3xuslib
+        try:
+            from eventflow.n3xus import emit_event
+
+            await emit_event(
+                event_type=event_type.value,
+                severity="info",
+                title=f"EventFlow: {event_type.value}",
+                payload={
+                    "event_id": event_id,
+                    "user_id": user_id,
+                    "session_id": session_id,
+                    "payload": payload,
+                },
+                tags=["eventflow", event_type.value],
+            )
+        except Exception:
+            pass
+
         return {
             "id": event_id,
             "event_type": event_type,

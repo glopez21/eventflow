@@ -17,6 +17,7 @@ dependencies = [
     "celery>=5.3.0",
     "httpx>=0.25.0",
     "pydantic[email]>=2.0.0",
+    "n3xuslib @ git+https://github.com/w01f/n3xuslib.git",
 ]
 
 [project.optional-dependencies]
@@ -28,6 +29,10 @@ dev = [
     "mypy>=1.0.0",
     "black>=23.0.0",
 ]
+augur = ["augur-client @ git+https://github.com/glopez21/augur-client.git"]
+
+[project.scripts]
+eventflow = "eventflow:run_server"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -45,6 +50,9 @@ ignore = ["E501"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/eventflow"]
