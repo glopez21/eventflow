@@ -17,7 +17,7 @@ dependencies = [
     "celery>=5.3.0",
     "httpx>=0.25.0",
     "pydantic[email]>=2.0.0",
-    "n3xuslib @ git+https://github.com/w01f/n3xuslib.git",
+    "n3xuslib @ git+https://github.com/glopez21/n3xuslib.git",
 ]
 
 [project.optional-dependencies]
